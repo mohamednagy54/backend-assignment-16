@@ -6,7 +6,10 @@ import {
   hash,
   NotFoundException,
   sendMail,
+  compare,
+  UnAuthorizedException,
 } from "../../common";
+import jwt from "jsonwebtoken";
 import { UserRepository } from "../../DB/models/user/user.repository";
 import {
   deleteFromCache,
@@ -58,7 +61,26 @@ class AuthService {
     );
   }
 
-  login(data: LoginDto) {}
+  async login(data: LoginDto) {
+    const { email, password } = data;
+    // check user existence
+    const user = await this.userRepository.getOne({ email });
+    if (!user) throw new NotFoundException("user not found");
+
+    // verify password
+    const isMatch = await compare(password, user.password);
+    if (!isMatch) throw new UnAuthorizedException("invalid credentials");
+
+    // generate token
+    const token = jwt.sign(
+      { userId: user._id },
+      (process.env.JWT_ACCESS_SECRET as string) || "your_access_secret_here",
+      { expiresIn: "1h" },
+    );
+
+    return token;
+  }
+  
   async resetPassword(resetPasswordDto: ResetPasswordDto) {
     let { email, otp, newPassword } = resetPasswordDto;
     // check email valid
@@ -72,7 +94,7 @@ class AuthService {
     // hash password
     newPassword = await hash(newPassword)
     // update password
-    this.userRepository.updateOne({ email }, { password: newPassword })
+    await this.userRepository.updateOne({ email }, { password: newPassword })
     // delete otp from cache
     await deleteFromCache(`${email}:otp`)
 

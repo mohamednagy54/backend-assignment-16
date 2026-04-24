@@ -1,12 +1,51 @@
 import type { NextFunction, Request, Response } from "express";
+import jwt, { type JwtPayload } from "jsonwebtoken";
+import { UnAuthorizedException } from "../common";
+import { redisClient } from "../DB/redis.connect";
+import { User } from "../DB/models/user/user.model";
 
-export const isAuthenticated = (
+const isAuthenticated = async (
   req: Request,
   res: Response,
   next: NextFunction,
 ) => {
-  // get authorization from req
-  // check token
-  // check user into db
-  // inject user into req
+  try {
+    const { authorization } = req.headers;
+
+    if (!authorization) {
+      return next(new UnAuthorizedException("Token is required"));
+    }
+
+    const token = authorization.startsWith("Bearer ")
+      ? (authorization.split(" ")[1] ?? "")
+      : authorization;
+
+    // Check if token is blacklisted in Redis
+    const isBlacklisted = await redisClient.get(`blacklist:${token}`);
+    if (isBlacklisted) {
+      return next(new UnAuthorizedException("Token has been revoked"));
+    }
+
+    const decoded = jwt.verify(
+      token,
+      (process.env.JWT_ACCESS_SECRET as string) || "your_access_secret_here",
+    ) as JwtPayload;
+
+    const user = await User.findById(decoded["userId"]);
+    if (!user) {
+      return next(new UnAuthorizedException("User not found"));
+    }
+
+    req.user = user.toObject();
+    req.token = token ?? "";
+
+    next();
+  } catch (error) {
+    if (error instanceof Error && error.name === "TokenExpiredError") {
+      return next(new UnAuthorizedException("Token expired"));
+    }
+    return next(new UnAuthorizedException("Invalid token"));
+  }
 };
+
+export default isAuthenticated;

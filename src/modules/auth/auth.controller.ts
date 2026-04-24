@@ -2,7 +2,13 @@ import { Router } from "express";
 import authService from "./auth.service";
 import type { NextFunction, Request, Response } from "express";
 import { isValid } from "../../middleware";
-import { signupSchema } from "./auth.validation";
+import {
+  loginSchema,
+  resetPasswordSchema,
+  sendOTPSchema,
+  signupSchema,
+  verifyAccountSchema,
+} from "./auth.validation";
 
 const router = Router();
 
@@ -23,7 +29,25 @@ router.post(
 );
 
 
-router.post("/verify-account",async (req: Request, res: Response, next: NextFunction) => {
+router.post(
+  "/login",
+  isValid(loginSchema),
+  async (req: Request, res: Response, next: NextFunction) => {
+    // call service
+    const token = await authService.login(req.body);
+    // send response
+    return res.status(200).json({
+      message: "user logged in successfully",
+      success: true,
+      token,
+    });
+  }
+);
+
+router.post(
+  "/verify-account",
+  isValid(verifyAccountSchema),
+  async (req: Request, res: Response, next: NextFunction) => {
   // call service
   await authService.verifyAccount(req.body);
   // send response
@@ -35,7 +59,10 @@ router.post("/verify-account",async (req: Request, res: Response, next: NextFunc
 })
 
 
-router.post("/send-otp",async (req: Request, res: Response, next: NextFunction) => {
+router.post(
+  "/send-otp",
+  isValid(sendOTPSchema),
+  async (req: Request, res: Response, next: NextFunction) => {
   // call service
   await authService.sendOTP(req.body);
   // send response
@@ -46,7 +73,10 @@ router.post("/send-otp",async (req: Request, res: Response, next: NextFunction) 
   });
 })
 
-router.patch("/reset-password",async (req: Request, res: Response, next: NextFunction) => {
+router.patch(
+  "/reset-password",
+  isValid(resetPasswordSchema),
+  async (req: Request, res: Response, next: NextFunction) => {
   // call service
   await authService.resetPassword(req.body);
   // send response

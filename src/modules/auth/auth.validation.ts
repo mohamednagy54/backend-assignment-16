@@ -1,6 +1,5 @@
 import z from "zod";
-import { SignupDto } from "./auth.dto";
-import { generalFields, SYS_GENDER } from "../../common";
+import { generalFields } from "../../common";
 
 export const signupSchema = z.object({
   userName: generalFields.userName,
@@ -17,4 +16,19 @@ export const loginSchema = z.object({
 
 export const forgetPasswordSchema = z.object({
   email: generalFields.email,
+});
+
+export const verifyAccountSchema = z.object({
+  email: generalFields.email,
+  otp: z.string(),
+});
+
+export const sendOTPSchema = z.object({
+  email: generalFields.email,
+});
+
+export const resetPasswordSchema = z.object({
+  email: generalFields.email,
+  newPassword: generalFields.password,
+  otp: z.string(),
 });
