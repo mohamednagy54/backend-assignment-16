@@ -9,6 +9,7 @@ import {
   compare,
   UnAuthorizedException,
 } from "../../common";
+import { JWT_ACCESS_SECRET, JWT_REFRESH_SECRET } from "../../config";
 import jwt from "jsonwebtoken";
 import { UserRepository } from "../../DB/models/user/user.repository";
 import {
@@ -48,7 +49,7 @@ class AuthService {
     await sendMail({
       to: email,
       subject: "Confirm email",
-      text: `<p>your otp to verify account is ${otp}</p>`,
+      html: `<p>your otp to verify account is ${otp}</p>`,
     });
     //  save otp into redis ttl 5 minutes
     await setIntoCache(`${signupDTO.email}:otp`, otp, 3 * 60);
@@ -71,14 +72,20 @@ class AuthService {
     const isMatch = await compare(password, user.password);
     if (!isMatch) throw new UnAuthorizedException("invalid credentials");
 
-    // generate token
-    const token = jwt.sign(
+    // generate tokens
+    const accessToken = jwt.sign(
       { userId: user._id },
-      (process.env.JWT_ACCESS_SECRET as string) || "your_access_secret_here",
+      JWT_ACCESS_SECRET,
       { expiresIn: "1h" },
     );
 
-    return token;
+    const refreshToken = jwt.sign(
+      { userId: user._id },
+      JWT_REFRESH_SECRET,
+      { expiresIn: "7d" },
+    );
+
+    return { accessToken, refreshToken };
   }
   
   async resetPassword(resetPasswordDto: ResetPasswordDto) {

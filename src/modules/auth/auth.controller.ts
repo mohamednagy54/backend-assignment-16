@@ -25,66 +25,66 @@ router.post(
       success: true,
     });
   },
-  
 );
-
 
 router.post(
   "/login",
   isValid(loginSchema),
   async (req: Request, res: Response, next: NextFunction) => {
     // call service
-    const token = await authService.login(req.body);
+    const { accessToken, refreshToken } = await authService.login(req.body);
     // send response
     return res.status(200).json({
       message: "user logged in successfully",
       success: true,
-      token,
+      tokens: {
+        accessToken,
+        refreshToken,
+      },
     });
-  }
+  },
 );
 
 router.post(
   "/verify-account",
   isValid(verifyAccountSchema),
   async (req: Request, res: Response, next: NextFunction) => {
-  // call service
-  await authService.verifyAccount(req.body);
-  // send response
-  return res.status(200).json({
-    message: "user verified successfully",
-    success: true,
-
-  });
-})
-
+    // call service
+    await authService.verifyAccount(req.body);
+    // send response
+    return res.status(200).json({
+      message: "user verified successfully",
+      success: true,
+    });
+  },
+);
 
 router.post(
   "/send-otp",
   isValid(sendOTPSchema),
   async (req: Request, res: Response, next: NextFunction) => {
-  // call service
-  await authService.sendOTP(req.body);
-  // send response
-  return res.status(200).json({
-    message: "otp sent successfully",
-    success: true,
-
-  });
-})
+    // call service
+    await authService.sendOTP(req.body);
+    // send response
+    return res.status(200).json({
+      message: "otp sent successfully",
+      success: true,
+    });
+  },
+);
 
 router.patch(
   "/reset-password",
   isValid(resetPasswordSchema),
   async (req: Request, res: Response, next: NextFunction) => {
-  // call service
-  await authService.resetPassword(req.body);
-  // send response
-  return res.status(200).json({
-    message: "password reset successfully",
-    success: true,
-
-  });
-})
+    // call service
+    await authService.resetPassword(req.body);
+    // send response
+    return res.status(200).json({
+      message: "password reset successfully",
+      success: true,
+    });
+  },
+);
 
 export default router;

@@ -5,3 +5,5 @@ export const EMAIL_USER = process.env.EMAIL_USER as string;
 export const EMAIL_PASS = process.env.EMAIL_PASS as string;
 export const EMAIL_FROM = process.env.EMAIL_FROM as string;
 export const REDIS_URI = process.env.REDIS_URI as string;
+export const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET as string;
+export const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET as string;

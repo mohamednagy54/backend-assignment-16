@@ -1,6 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import jwt, { type JwtPayload } from "jsonwebtoken";
 import { UnAuthorizedException } from "../common";
+import { JWT_ACCESS_SECRET } from "../config";
 import { redisClient } from "../DB/redis.connect";
 import { User } from "../DB/models/user/user.model";
 
@@ -28,7 +29,7 @@ const isAuthenticated = async (
 
     const decoded = jwt.verify(
       token,
-      (process.env.JWT_ACCESS_SECRET as string) || "your_access_secret_here",
+      JWT_ACCESS_SECRET,
     ) as JwtPayload;
 
     const user = await User.findById(decoded["userId"]);

@@ -1,5 +1,5 @@
 import express, { NextFunction, Request, Response } from "express";
-import { authRouter } from "./modules";
+import { authRouter, postRouter } from "./modules";
 import { BadRequestException } from "./common";
 import { connectDB } from "./DB/connection";
 import { redisConnect } from "./DB/redis.connect";
@@ -19,6 +19,7 @@ export function bootstrap() {
 
   // routing
   app.use("/auth", authRouter);
+  app.use("/posts", postRouter);
 
   // global error handler
   app.use((error: Error, req: Request, res: Response, next: NextFunction) => {
