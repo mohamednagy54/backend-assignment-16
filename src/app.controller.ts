@@ -14,12 +14,11 @@ export function bootstrap() {
   // connect to redis
   redisConnect();
 
-  
   app.use(express.json());
 
   // routing
   app.use("/auth", authRouter);
-  app.use("/posts", postRouter);
+  app.use("/post", postRouter);
 
   // global error handler
   app.use((error: Error, req: Request, res: Response, next: NextFunction) => {

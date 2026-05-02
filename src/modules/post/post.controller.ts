@@ -4,26 +4,31 @@ import type { NextFunction, Request, Response } from "express";
 import { isValid } from "../../middleware";
 import isAuthenticated from "../../middleware/auth.middleware";
 import {
-  createPostSchema,
   updatePostSchema,
   postIdParamSchema,
   reactToPostSchema,
   getPostsQuerySchema,
+  createPostSchema,
 } from "./post.validation";
+import { Types } from "mongoose";
 
 const router = Router();
+
 
 // create post
 router.post(
   "/",
-  isAuthenticated,
+  // isAuthenticated,
   isValid(createPostSchema),
   async (req: Request, res: Response, next: NextFunction) => {
-    const post = await postService.createPost(req.user._id.toString(), req.body);
+    const createdPost = await postService.create(
+      new Types.ObjectId("69ec71f006e43ccbff317bc3"),
+      req.body,
+    );
     return res.status(201).json({
       message: "post created successfully",
       success: true,
-      data: post,
+      data: { createdPost },
     });
   },
 );
@@ -95,6 +100,7 @@ router.patch(
 );
 
 // delete post
+
 router.delete(
   "/:postId",
   isAuthenticated,

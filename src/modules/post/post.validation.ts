@@ -1,16 +1,21 @@
 import z from "zod";
-import { generalFields } from "../../common";
+import { BadRequestException, generalFields } from "../../common";
 
-export const createPostSchema = z.object({
-  content: z.string().min(1).max(5000).optional(),
-  attachments: z.array(z.string().url()).optional(),
-}).refine((data) => data.content || (data.attachments && data.attachments.length > 0), {
-  message: "post must have content or at least one attachment",
-});
+export const createPostSchema = z
+  .object({
+    content: z.string().min(1).max(5000).optional(),
+    attachments: z.array(z.string()).optional(),
+  })
+  .refine((data) => {
+    if (!data.content && (!data.attachments || data.attachments.length === 0)) {
+      throw new BadRequestException("Content or attachments are required");
+    }
+    return true;
+  });
 
 export const updatePostSchema = z.object({
   content: z.string().min(1).max(5000).optional(),
-  attachments: z.array(z.string().url()).optional(),
+  attachments: z.array(z.string()).optional(),
 });
 
 export const postIdParamSchema = z.object({
